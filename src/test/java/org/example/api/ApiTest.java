@@ -9,6 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.UUID;
 
@@ -16,11 +17,11 @@ import static io.restassured.RestAssured.given;
 
 public class ApiTest {
     @BeforeClass
-    public void prepare() {
-
+    public void prepare() throws IOException {
+        System.getProperties().load(ClassLoader.getSystemResourceAsStream("application.properties"));
         RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setBaseUri("https://petstore.swagger.io/v2/")
-                .addHeader("api_key", "danilishePetTestKey")
+                .addHeader("api_key", System.getProperty("api.key"))
                 .setAccept(ContentType.JSON)
                 .setContentType(ContentType.JSON)
                 .log(LogDetail.ALL)
