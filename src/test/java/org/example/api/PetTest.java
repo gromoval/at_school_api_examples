@@ -55,10 +55,13 @@ public class PetTest {
                 break;
             case 405:
                 System.out.println("Неверный метод применен (Get вместо Post и т.п.)");
+                break;
             case 500:
                 System.out.println("Внутренняя ошибка сервера!");
+                break;
             case 502:
                 System.out.println("Вышестоящий сервер вернул какую-то ерунду...");
+                break;
             default:
                 System.out.println("Вообще не понятно, что произошло...");
                 break;
