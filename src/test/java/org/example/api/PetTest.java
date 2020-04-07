@@ -1,10 +1,14 @@
 package org.example.api;
 
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.model.Pet;
 import org.testng.Assert;
 import org.testng.annotations.BeforeSuite;
@@ -17,7 +21,11 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 
 public class PetTest {
+    public final Logger logger = LogManager.getLogger(getClass());
     static RequestSpecification requestSpec;
+    static ResponseSpecification responseSpec;
+    static ResponseSpecification responseSpecAfterDelete;
+
     Pet pet = new Pet();
     static int id;
 
@@ -31,6 +39,14 @@ public class PetTest {
                 .setContentType(ContentType.JSON)
                 .log(LogDetail.ALL)
                 .build();
+        responseSpec = new ResponseSpecBuilder()
+                .expectStatusCode(200)
+                .log(LogDetail.ALL)
+                .build();
+        responseSpecAfterDelete = new ResponseSpecBuilder()
+                .expectStatusCode(404)
+                .log(LogDetail.ALL)
+                .build();
 
         id = new Random().nextInt(500000);
         String name = "Pet_" + UUID.randomUUID().toString();
@@ -38,45 +54,16 @@ public class PetTest {
         pet.setName(name);
     }
 
-    //будем проверять после delete уже, когда не будет pet. вроде невалид
-    @Test(priority = 10)
-    public void testGetDeleted() {
-        Response response = given()
-                .spec(requestSpec)
-                .pathParam("petId", id)
-                .get("/pet/{petId}");
-
-        switch (response.getStatusCode()) {
-            case 200:
-                System.out.println("Все хорошо. запрос выполнен");
-                break;
-            case 404:
-                System.out.println("Элемент не найден!");
-                break;
-            case 405:
-                System.out.println("Неверный метод применен (Get вместо Post и т.п.)");
-                break;
-            case 500:
-                System.out.println("Внутренняя ошибка сервера!");
-                break;
-            case 502:
-                System.out.println("Вышестоящий сервер вернул какую-то ерунду...");
-                break;
-            default:
-                System.out.println("Вообще не понятно, что произошло...");
-                break;
-        }
-    }
-
     @Test(priority = 0)
     public void testPost() {
+        logger.info("Begin TestPost()");
         given()
                 .spec(requestSpec)
                 .body(pet)
                 .when()
                 .post("/pet")
                 .then()
-                .statusCode(200);
+                .spec(responseSpec);
 
         Pet actualPet = given()
                 .spec(requestSpec)
@@ -84,13 +71,15 @@ public class PetTest {
                 .when()
                 .get("/pet/{petId}")
                 .then()
-                .statusCode(200)
+                .spec(responseSpec)
                 .extract().body().as(Pet.class);
         Assert.assertEquals(actualPet.getName(), pet.getName());
+        logger.info("End TestPost()");
     }
 
     @Test(priority = 1)
     public void testPut() {
+        logger.info("Begin TestPut()");
         pet.setName("Штуша кутуша");
         given()
                 .spec(requestSpec)
@@ -98,7 +87,7 @@ public class PetTest {
                 .when()
                 .put("/pet")
                 .then()
-                .statusCode(200);
+                .spec(responseSpec);
 
         Pet actualPet = given()
                 .spec(requestSpec)
@@ -106,21 +95,37 @@ public class PetTest {
                 .when()
                 .get("/pet/{petId}")
                 .then()
-                .statusCode(200)
+                .spec(responseSpec)
                 .extract().body().as(Pet.class);
         Assert.assertEquals(actualPet.getName(), pet.getName());
+        logger.info("End TestPut()");
     }
 
     @Test(priority = 5)
     public void testDelete() {
-        Response response = given()
+        logger.info("Begin TestDelete()");
+        given()
                 .spec(requestSpec)
                 .pathParam("petId", id)
                 .body(pet)
-                .delete("/pet/{petId}");
+                .when()
+                .delete("/pet/{petId}")
+                .then()
+                .spec(responseSpec);
+        logger.info("End TestDelete()");
+    }
 
-        System.out.printf("Response: %s\n", response.asString());
-        System.out.printf("Status Code: %s\n", response.getStatusCode());
-        Assert.assertEquals(response.getStatusCode(), 200);
+    //будем проверять после delete уже, когда не будет pet. вроде невалид
+    @Test(priority = 10)
+    public void testGetDeleted() {
+        logger.info("Begin TestGetDeleted()");
+        given()
+                .spec(requestSpec)
+                .pathParam("petId", id)
+                .when()
+                .get("/pet/{petId}")
+                .then()
+                .spec(responseSpecAfterDelete);
+        logger.info("End TestGetDeleted()");
     }
 }

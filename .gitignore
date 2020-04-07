@@ -1,6 +1,15 @@
-target/
-.gitignore
-/target/
-/.idea/workspace.xml
+# Log file
+*.log
+logs/
 
-/src/main/resources/application.properties
+# Maven
+target/
+
+# Intellij
+*.iml
+*.iws
+*.idea/
+
+.allure/
+
+src/main/resources/application.properties
