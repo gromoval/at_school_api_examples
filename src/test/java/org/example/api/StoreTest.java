@@ -8,7 +8,6 @@ import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.example.model.Pet;
 import org.example.model.Store;
 import org.testng.Assert;
 import org.testng.annotations.BeforeSuite;
@@ -16,12 +15,12 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.Random;
-import java.util.UUID;
+
 
 import static io.restassured.RestAssured.given;
 
 public class StoreTest {
-    public static final Logger logger = LogManager.getLogger(StoreTest.class);
+    private static final Logger logger = LogManager.getLogger(StoreTest.class);
     static RequestSpecification requestSpec;
     static ResponseSpecification responseSpec;
     static ResponseSpecification responseSpecAfterDelete;

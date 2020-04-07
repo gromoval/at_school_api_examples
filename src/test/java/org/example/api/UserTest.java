@@ -4,13 +4,11 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
-import io.restassured.http.Headers;
-import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.example.model.Pet;
+import org.example.model.User;
 import org.testng.Assert;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -21,13 +19,13 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 
-public class PetTest {
-    private Logger logger = LogManager.getLogger(PetTest.class);
+public class UserTest {
+    private Logger logger = LogManager.getLogger(UserTest.class);
     static RequestSpecification requestSpec;
     static ResponseSpecification responseSpec;
     static ResponseSpecification responseSpecAfterDelete;
 
-    Pet pet = new Pet();
+    User user = new User();
     static int id;
 
     @BeforeSuite
@@ -50,55 +48,69 @@ public class PetTest {
                 .build();
 
         id = new Random().nextInt(500000);
-        String name = "Pet_" + UUID.randomUUID().toString();
-        pet.setId(id);
-        pet.setName(name);
+        String name = "User_" + UUID.randomUUID().toString();
+        user.setId(id);
+        user.setUsername(name);
     }
 
+//    чтобы новых юзеров добавлять, нужно залогиниться
     @Test(priority = 0)
+    public void testLogin() {
+        logger.info("Begin TestLogin()");
+        given()
+                .spec(requestSpec)
+                .when()
+                .get("/user/login")
+                .then()
+                .spec(responseSpec);
+        logger.info("End TestLogin()");
+    }
+
+    @Test(priority = 1)
     public void testPost() {
         logger.info("Begin TestPost()");
         given()
                 .spec(requestSpec)
-                .body(pet)
+                .body(user)
                 .when()
-                .post("/pet")
+                .post("/user")
                 .then()
                 .spec(responseSpec);
 
-        Pet actualPet = given()
+        User actualUser = given()
                 .spec(requestSpec)
-                .pathParam("petId", id)
+                .pathParam("username", user.getUsername())
                 .when()
-                .get("/pet/{petId}")
+                .get("/user/{username}")
                 .then()
                 .spec(responseSpec)
-                .extract().body().as(Pet.class);
-        Assert.assertEquals(actualPet.getName(), pet.getName());
+                .extract().body().as(User.class);
+        Assert.assertEquals(actualUser.getUsername(), user.getUsername());
         logger.info("End TestPost()");
     }
 
-    @Test(priority = 1)
+    @Test(priority = 2)
     public void testPut() {
         logger.info("Begin TestPut()");
-        pet.setName("Штуша кутуша");
+        user.setFirstName("Вася");
         given()
                 .spec(requestSpec)
-                .body(pet)
+                .body(user)
+                .pathParam("username", user.getUsername())
                 .when()
-                .put("/pet")
+                .put("/user/{username}")
                 .then()
                 .spec(responseSpec);
 
-        Pet actualPet = given()
+        User actualUser = given()
                 .spec(requestSpec)
-                .pathParam("petId", id)
+                .pathParam("username", user.getUsername())
                 .when()
-                .get("/pet/{petId}")
+                .get("/user/{username}")
                 .then()
                 .spec(responseSpec)
-                .extract().body().as(Pet.class);
-        Assert.assertEquals(actualPet.getName(), pet.getName());
+                .extract().body().as(User.class);
+        Assert.assertEquals(actualUser.getFirstName(), user.getFirstName());
         logger.info("End TestPut()");
     }
 
@@ -107,10 +119,10 @@ public class PetTest {
         logger.info("Begin TestDelete()");
         given()
                 .spec(requestSpec)
-                .pathParam("petId", id)
-                .body(pet)
+                .pathParam("username", user.getUsername())
+                .body(user)
                 .when()
-                .delete("/pet/{petId}")
+                .delete("/user/{username}")
                 .then()
                 .spec(responseSpec);
         logger.info("End TestDelete()");
@@ -122,22 +134,11 @@ public class PetTest {
         logger.info("Begin TestGetDeleted()");
         given()
                 .spec(requestSpec)
-                .pathParam("petId", id)
+                .pathParam("username", user.getUsername())
                 .when()
-                .get("/pet/{petId}")
+                .get("/user/{username}")
                 .then()
                 .spec(responseSpecAfterDelete);
-
-//        проверим что запихнется в лог. просто для себя на будущее
-        Headers proverka = given()
-                .spec(requestSpec)
-                .pathParam("petId", id)
-                .when()
-                .get("/pet/{petId}")
-                .then()
-                .extract().headers();
-        logger.info(proverka);
-
         logger.info("End TestGetDeleted()");
     }
 }

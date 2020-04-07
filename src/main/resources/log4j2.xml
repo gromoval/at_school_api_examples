@@ -1,31 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration>
-    <!-- Секция аппендеров -->
+<Configuration status="INFO">
     <Appenders>
-        <!-- Файловый аппендер -->
-        <File name="file" fileName="log.log">
-            <PatternLayout>
-                <Pattern>%d %p %c{1.} [%t] %m %ex%n</Pattern>
-            </PatternLayout>
-        </File>
-        <!-- Файловый аппендер -->
-        <File name="file2" fileName="log2.log">
-            <!-- Фильтр по маркеру -->
-            <MarkerFilter marker="fileonly" onMatch="DENY" onMismatch="ACCEPT"/>
-            <PatternLayout>
-                <Pattern>%d %p %c{1.} [%t] %m %ex%n</Pattern>
-            </PatternLayout>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+        <File name="MyFile" fileName="logs/FrameWorkLog.log" immediateFlush="false" append="false">
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </File>
     </Appenders>
-    <!-- Секция логгеров -->
     <Loggers>
-        <!-- Корневой логгер -->
-        <Root level="trace">
-            <AppenderRef ref="file" level="DEBUG"/>
+        <Root level="debug">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile"/>
         </Root>
-        <!-- Логгер нашего класса -->
-        <Logger name="logging.log4j.LoggingLog4j" level="info" additivity="false">
-            <AppenderRef ref="file2" level="INFO"/>
-        </Logger>
     </Loggers>
 </Configuration>
+
+
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!--<Configuration status="WARN">-->
+<!--    <Properties>-->
+<!--        <Property name="logPath">logs</Property>-->
+<!--        <Property name="rollingFileName">FrameWorkLog</Property>-->
+<!--    </Properties>-->
+<!--    &lt;!&ndash; Секция аппендеров &ndash;&gt;-->
+<!--    <Appenders>-->
+<!--        <Console name="console" target="SYSTEM_OUT">-->
+<!--            <PatternLayout pattern="[%highlight{%-5level}] %d{DEFAULT} %c{1}.%M() - %msg%n%throwable{short.lineNumber}" />-->
+<!--        </Console>-->
+<!--        <RollingFile name="rollingFile" fileName="${logPath}/${rollingFileName}.log" filePattern="${logPath}/${rollingFileName}_%d{yyyy-MM-dd}.log">-->
+<!--            <PatternLayout pattern="[%highlight{%-5level}] %d{DEFAULT} %c{1}.%M() - %msg%n%throwable{short.lineNumber}" />-->
+<!--            <Policies>-->
+<!--                &lt;!&ndash; Causes a rollover if the log file is older than the current JVM's start time &ndash;&gt;-->
+<!--                <OnStartupTriggeringPolicy />-->
+<!--                &lt;!&ndash; Causes a rollover once the date/time pattern no longer applies to the active file &ndash;&gt;-->
+<!--                <TimeBasedTriggeringPolicy interval="1" modulate="true" />-->
+<!--            </Policies>-->
+<!--        </RollingFile>-->
+<!--    </Appenders>-->
+<!--    &lt;!&ndash; Секция логгеров &ndash;&gt;-->
+<!--    <Loggers>-->
+<!--        &lt;!&ndash; Корневой логгер &ndash;&gt;-->
+<!--        <Root level="DEBUG" additivity="false">-->
+<!--            <AppenderRef ref="console" />-->
+<!--            <AppenderRef ref="rollingFile" />-->
+<!--        </Root>-->
+<!--    </Loggers>-->
+<!--</Configuration>-->
